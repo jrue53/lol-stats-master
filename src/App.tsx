@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
-import type { Summoner, IMatchDTO } from './types';
+import type { Summoner, IMatchDTO, ParticipantDTO } from './types';
+
 
 function App() {
   const [summonerName, setSummonerName] = useState('');
@@ -8,6 +9,18 @@ function App() {
   const [matches, setMatches] = useState<IMatchDTO[] | null>(null);
   const [expandedMatch, setExpandedMatch] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+
+  function getGameResult(participants: ParticipantDTO[], playerSummonerName: string) {
+    const player = participants.find((participant: { summonerName: string; }) =>participant.summonerName === playerSummonerName)
+    if(player && player.win){
+      return true
+    }
+  }
+
+  function getChamp(participants: ParticipantDTO[], playerSummonerName: string) {
+    const player = participants.find((participant: { summonerName: string; }) =>participant.summonerName === playerSummonerName)
+    return player?.championName
+  }
 
   const handleSearch = () => {
     setLoading(true);
@@ -69,25 +82,68 @@ function App() {
       </button>
       {summoner && (
         <div className="mt-4">
-          <h2 className="text-xl font-semibold mb-2">Summoner Information:</h2>
-          <pre className="bg-gray-200 p-4 rounded">
-            {summoner.name}: Level {summoner.summonerLevel}
-          </pre>
+          <h2 className="text-xl font-semibold mb-2">
+            Match History for {summoner.name} Level {summoner.summonerLevel}
+          </h2>
         </div>
       )}
       {matches &&
         matches.map((element) => (
           <div
-            className="mt-4 cursor-pointer"
+            className={`mt-4 cursor-pointer ${
+              getGameResult(element.info.participants, summonerName)
+                ? `bg-green-400`
+                : `bg-red-400`
+            }`}
             key={element.info.gameId}
             onClick={() => toggleMatchExpansion(element.info.gameId)}
           >
-            <h2 className="text-xl font-semibold mb-2">
-              Match: {element.info.gameId}
-            </h2>
+            <div className="flex">
+              <h2 className="text-l font-semibold m-2">
+                {element.info.gameMode}
+              </h2>
+              <h2 className="text-l font-semibold m-2">
+                {getChamp(element.info.participants, summonerName)}
+              </h2>
+              <h2 className="text-l font-semibold m-2">
+                {getGameResult(element.info.participants, summonerName)
+                  ? "WIN"
+                  : "LOSS"}
+              </h2>
+              <h2 className="text-l font-semibold m-2">
+                {timeConvert(element.info.gameDuration)}
+              </h2>
+            </div>
             {expandedMatch === element.info.gameId && (
               <div className="bg-gray-200 p-4 rounded">
-                {timeConvert(element.info.gameDuration)}
+                <div>
+                  {element &&
+                    element.info.teams.map((team) => (
+                      <div
+                        className={`mt-4 cursor-pointer ${
+                          team.win ? `bg-green-200` : `bg-red-200`
+                        }`}
+                      >
+                        <h2 className="text-xl font-semibold my-4">
+                          {team.win ? "Victory" : "Defeat"}
+                        </h2>
+                        {element &&
+                          element.info.participants
+                            .filter((player) => player.teamId === team.teamId)
+                            .map((filteredPlayer) => (
+                              <h2
+                                className={`text-l mb-2 ${filteredPlayer.summonerName === summonerName ? 'font-extrabold' : ' font-semibold'}`}
+                                key={filteredPlayer.championId}
+                              >
+                                {filteredPlayer.championName}:{" "}
+                                {filteredPlayer.summonerName}{" "}
+                                {filteredPlayer.kills}/{filteredPlayer.deaths}/
+                                {filteredPlayer.assists}
+                              </h2>
+                            ))}
+                      </div>
+                    ))}
+                </div>
               </div>
             )}
           </div>
