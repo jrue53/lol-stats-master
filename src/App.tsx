@@ -98,6 +98,8 @@ function App() {
           <h2 className="text-xl font-semibold mb-2">
             Match History for {summoner.name} Level {summoner.summonerLevel}
           </h2>
+          <img src={`https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/profile-icons/${summoner.profileIconId}.jpg`} height="50px" width="50px"/>
+
         </div>
       )}
       {/* for every match */}
@@ -198,6 +200,7 @@ function App() {
                                       {filteredPlayer.championName}:{" "}
                                       {filteredPlayer.summonerName}
                                     </h2>
+                                    <img src={`https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/${filteredPlayer.championId}.png`} height="50px" width="50px"/>
                                   </div>
                                   <div>
                                     <h2
